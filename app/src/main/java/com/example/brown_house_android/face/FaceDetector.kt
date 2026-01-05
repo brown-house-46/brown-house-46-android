@@ -2,6 +2,7 @@ package com.example.brown_house_android.face
 
 import android.graphics.Bitmap
 import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import kotlinx.coroutines.tasks.await
@@ -30,6 +31,21 @@ class FaceDetector {
         } catch (e: Exception) {
             e.printStackTrace()
             0
+        }
+    }
+
+    /**
+     * Bitmap에서 얼굴 검출 (상세 정보 포함)
+     * @param bitmap 분석할 이미지
+     * @return 검출된 Face 객체 리스트
+     */
+    suspend fun detectFacesWithDetails(bitmap: Bitmap): List<Face> {
+        return try {
+            val inputImage = InputImage.fromBitmap(bitmap, 0)
+            detector.process(inputImage).await()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
         }
     }
 
