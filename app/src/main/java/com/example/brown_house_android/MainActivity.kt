@@ -384,4 +384,57 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    private fun exportResultsAsCSV(summary: FaceClusterer.ClusteringSummary): String {
+        val file = File(getExternalFilesDir(null), "face_clustering_result.csv")
+        file.bufferedWriter().use { writer ->
+            writer.write("PersonID,FaceCount,ImageIndices\n")
+            summary.clusters.forEach { cluster ->
+                writer.write("${cluster.personId},${cluster.faceCount},\"${cluster.imageIndices.joinToString(",")}\"\n")
+            }
+        }
+        Log.d("Export", "CSV 저장: ${file.absolutePath}")
+        return file.absolutePath
+    }
+
+    private fun exportResultsAsJSON(summary: FaceClusterer.ClusteringSummary): String {
+        val file = File(getExternalFilesDir(null), "face_clustering_result.json")
+        val json = buildString {
+            appendLine("{")
+            appendLine("  \"totalFaces\": ${summary.totalFaces},")
+            appendLine("  \"totalPeople\": ${summary.totalPeople},")
+            appendLine("  \"clusters\": [")
+            summary.clusters.forEachIndexed { index, cluster ->
+                appendLine("    {")
+                appendLine("      \"personId\": ${cluster.personId},")
+                appendLine("      \"faceCount\": ${cluster.faceCount},")
+                appendLine("      \"imageIndices\": [${cluster.imageIndices.joinToString(", ")}]")
+                append("    }")
+                if (index < summary.clusters.size - 1) appendLine(",")
+                else appendLine()
+            }
+            appendLine("  ]")
+            appendLine("}")
+        }
+        file.writeText(json)
+        Log.d("Export", "JSON 저장: ${file.absolutePath}")
+        return file.absolutePath
+    }
+
+    private fun shareFile(filePath: String) {
+        val file = File(filePath)
+        val uri = FileProvider.getUriForFile(
+            this,
+            "${packageName}.fileprovider",
+            file
+        )
+
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = if (filePath.endsWith(".csv")) "text/csv" else "application/json"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+
+        startActivity(Intent.createChooser(shareIntent, "결과 공유"))
+    }
 }
