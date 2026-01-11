@@ -73,7 +73,7 @@ class MainActivity : ComponentActivity() {
         faceEmbedder?.close()
     }
 
-    @Composable
+    @Composable // like Controller(진입점)
     fun FaceDetectionScreen(modifier: Modifier = Modifier) {
         // UI 상태 관리
         var selectedImagesCount by remember { mutableIntStateOf(0) }
@@ -87,6 +87,7 @@ class MainActivity : ComponentActivity() {
         }
 
         // Photo Picker 런처
+        // 사용자가 이미지 업로드하면 processImageWithClustering() 호출
         val pickMultipleMedia = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.PickMultipleVisualMedia(maxItems = 20)
         ) { uris: List<Uri> ->
@@ -114,6 +115,7 @@ class MainActivity : ComponentActivity() {
         }
 
         // UI 렌더링
+        // 상태 변수별 값에 따라 화면 렌더링
         Column(
             modifier = modifier
                 .fillMaxSize()
@@ -290,6 +292,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // 사진 고르기 Picker UI
     private fun launchPhotoPicker(
         launcher: androidx.activity.result.ActivityResultLauncher<PickVisualMediaRequest>
     ) {
@@ -298,6 +301,8 @@ class MainActivity : ComponentActivity() {
         )
     }
 
+
+    // image processing(face 패키지의 얼굴 검출 -> 크롭 -> 임베딩 -> 클러스터링)
     private fun processImagesWithClustering(
         uris: List<Uri>,
         onComplete: (FaceClusterer.ClusteringSummary?, List<String>) -> Unit
