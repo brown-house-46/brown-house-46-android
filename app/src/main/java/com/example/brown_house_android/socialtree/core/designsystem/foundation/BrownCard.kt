@@ -34,13 +34,14 @@ import com.example.brown_house_android.socialtree.core.designsystem.tokens.Brown
 fun BrownCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
+    shape: RoundedCornerShape = RoundedCornerShape(BrownShape.card),
     content: @Composable () -> Unit
 ) {
     if (onClick != null) {
         Card(
             onClick = onClick,
             modifier = modifier,
-            shape = RoundedCornerShape(BrownShape.card),
+            shape = shape,
             colors = CardDefaults.cardColors(
                 containerColor = BrownColor.SurfaceLight,
                 contentColor = BrownColor.TextMainLight
@@ -55,7 +56,7 @@ fun BrownCard(
     } else {
         Card(
             modifier = modifier,
-            shape = RoundedCornerShape(BrownShape.card),
+            shape = shape,
             colors = CardDefaults.cardColors(
                 containerColor = BrownColor.SurfaceLight,
                 contentColor = BrownColor.TextMainLight

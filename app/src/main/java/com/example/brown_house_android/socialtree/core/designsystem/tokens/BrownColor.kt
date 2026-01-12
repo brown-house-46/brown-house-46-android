@@ -50,4 +50,28 @@ object BrownColor {
     val Taupe = Color(0xFF5C554B)             // Taupe brown (login)
     val Beige = Color(0xFFD1C7B1)             // Light beige
     val Golden = Color(0xFFECA413)            // Golden yellow
+
+    // Colors from HTML Document Designs
+    // From 노드_정보_입력_페이지 (Input Page)
+    val InputPrimary = Color(0xFF433E33)      // Warm Deep Charcoal for actions
+    val InputPrimaryForeground = Color(0xFFF5F2EB)  // Light Cream text on primary
+    val InputBgLight = Color(0xFFF5F2EB)      // Warm Beige Background
+    val InputBgDark = Color(0xFF262522)       // Warm Dark Background
+    val InputSurfaceLight = Color(0xFFFFFFFF) // White Surface for inputs
+    val InputSurfaceDark = Color(0xFF33312C)  // Dark Warm Surface
+    val InputTextMain = Color(0xFF2D2A26)     // Soft Black
+    val InputTextSub = Color(0xFF8E8980)      // Warm Grey
+    val InputAccent = Color(0xFFE8E4D9)       // Soft Beige Accents
+    val InputPlaceholder = Color(0xFFD1D1D1)  // Placeholder gray
+
+    // From 노드_상세정보_페이지 (Detail Page)
+    val DetailPrimary = Color(0xFFD1C7B1)     // Primary for detail page
+    val DetailBgLight = Color(0xFFF5F4F2)     // Background light
+    val DetailBgDark = Color(0xFF262320)      // Background dark
+    val DetailSurfaceLight = Color(0xFFFFFFFF)// Surface light
+    val DetailSurfaceDark = Color(0xFF2E2B28) // Surface dark
+    val DetailTextMain = Color(0xFF44403C)    // Text main
+    val DetailTextSub = Color(0xFF78716C)     // Text sub
+    val DetailBorder = Color(0xFFE7E5E4)      // Border color
+    val DetailIconBg = Color(0xFFF5F4F2)      // Icon circle background (same as bg-light)
 }

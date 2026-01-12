@@ -47,4 +47,5 @@ object BrownShape {
     )
     val avatar = full                 // circular avatars
     val chip = extraLarge             // rounded-2xl (filter chips, tags)
+    val chipShape = RoundedCornerShape(chip)
 }

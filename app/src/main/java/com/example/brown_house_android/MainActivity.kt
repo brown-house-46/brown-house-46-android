@@ -28,7 +28,8 @@ import com.example.brown_house_android.face.FaceClusterer
 import com.example.brown_house_android.face.FaceCropper
 import com.example.brown_house_android.face.FaceDetector
 import com.example.brown_house_android.face.FaceEmbedder
-import com.example.brown_house_android.ui.theme.Brown_house_androidTheme
+import com.example.brown_house_android.socialtree.core.designsystem.theme.SocialTreeTheme
+import com.example.brown_house_android.socialtree.core.navigation.SocialTreeNavHost
 import com.example.brown_house_android.util.ImageLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -57,12 +58,8 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            Brown_house_androidTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    FaceDetectionScreen(
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+            SocialTreeTheme {
+                SocialTreeNavHost()
             }
         }
     }
