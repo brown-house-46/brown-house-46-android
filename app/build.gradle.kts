@@ -60,6 +60,15 @@ dependencies {
     implementation(libs.tensorflow.lite)
     implementation(libs.tensorflow.lite.support)
 
+    // Navigation Compose
+    implementation("androidx.navigation:navigation-compose:2.7.6")
+
+    // Extended Material Icons
+    implementation("androidx.compose.material:material-icons-extended:1.5.4")
+
+    // Image Loading (Coil)
+    implementation("io.coil-kt:coil-compose:2.5.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
