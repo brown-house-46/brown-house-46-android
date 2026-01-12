@@ -119,6 +119,14 @@ class FaceClusteringOrchestrator(
             summary = faceClusterer.summarize(clusters)
 
             Log.d("FaceClustering", "총 ${summary.totalFaces}개 얼굴, ${summary.totalPeople}명 인물")
+
+            // 메모리 최적화: 대표 얼굴을 제외한 나머지 비트맵 해제
+            val representativeBitmaps = summary.clusters.map { it.representativeFace }.toSet()
+            allFaceData.forEach { faceData ->
+                if (faceData.bitmap !in representativeBitmaps) {
+                    faceData.bitmap.recycle()
+                }
+            }
         }
 
         // 최종 결과 emit

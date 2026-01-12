@@ -81,24 +81,31 @@ object ImageLoader {
         bitmap: Bitmap,
         uri: Uri
     ): Bitmap {
-        val inputStream = context.contentResolver.openInputStream(uri) ?: return bitmap
+        return context.contentResolver.openInputStream(uri)?.use { inputStream ->
+            val exif = ExifInterface(inputStream)
+            val orientation = exif.getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_NORMAL
+            )
 
-        val exif = ExifInterface(inputStream)
-        val orientation = exif.getAttributeInt(
-            ExifInterface.TAG_ORIENTATION,
-            ExifInterface.ORIENTATION_NORMAL
-        )
-
-        return when (orientation) {
-            ExifInterface.ORIENTATION_ROTATE_90 -> rotateBitmap(bitmap, 90f)
-            ExifInterface.ORIENTATION_ROTATE_180 -> rotateBitmap(bitmap, 180f)
-            ExifInterface.ORIENTATION_ROTATE_270 -> rotateBitmap(bitmap, 270f)
-            else -> bitmap
-        }
+            when (orientation) {
+                ExifInterface.ORIENTATION_ROTATE_90 -> rotateBitmap(bitmap, 90f)
+                ExifInterface.ORIENTATION_ROTATE_180 -> rotateBitmap(bitmap, 180f)
+                ExifInterface.ORIENTATION_ROTATE_270 -> rotateBitmap(bitmap, 270f)
+                else -> bitmap
+            }
+        } ?: bitmap
     }
 
     private fun rotateBitmap(bitmap: Bitmap, degrees: Float): Bitmap {
         val matrix = Matrix().apply { postRotate(degrees) }
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        val rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+
+        // 새로운 비트맵이 생성된 경우에만 원본을 해제
+        if (rotatedBitmap != bitmap) {
+            bitmap.recycle()
+        }
+
+        return rotatedBitmap
     }
 }
