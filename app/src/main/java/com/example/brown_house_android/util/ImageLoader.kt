@@ -84,7 +84,7 @@ object ImageLoader {
         bitmap: Bitmap,
         uri: Uri
     ): Bitmap {
-        return context.contentResolver.openInputStream(uri)?.use { inputStream ->
+        val rotatedBitmap = context.contentResolver.openInputStream(uri)?.use { inputStream ->
             val exif = ExifInterface(inputStream)
             val orientation = exif.getAttributeInt(
                 ExifInterface.TAG_ORIENTATION,
@@ -98,18 +98,16 @@ object ImageLoader {
                 else -> bitmap
             }
         } ?: bitmap
-    }
 
-    //optimize: 원본 비트맵을 다시 안쓴다면 recycle 해야 메모리 누수를 방지한다
-    private fun rotateBitmap(bitmap: Bitmap, degrees: Float): Bitmap {
-        val matrix = Matrix().apply { postRotate(degrees) }
-        val rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-
-        // 새로운 비트맵이 생성된 경우에만 원본을 해제
         if (rotatedBitmap != bitmap) {
             bitmap.recycle()
         }
-
         return rotatedBitmap
     }
+
+    private fun rotateBitmap(bitmap: Bitmap, degrees: Float): Bitmap {
+        val matrix = Matrix().apply { postRotate(degrees) }
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+    }
+
 }
