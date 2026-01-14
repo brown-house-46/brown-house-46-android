@@ -7,6 +7,7 @@ import com.example.brown_house_android.socialtree.core.model.NodeStatus
 import com.example.brown_house_android.socialtree.core.model.NodeType
 import com.example.brown_house_android.socialtree.core.model.PersonData
 import com.example.brown_house_android.socialtree.core.model.PersonRelationship
+import com.example.brown_house_android.socialtree.core.model.PhotoMetadata
 import com.example.brown_house_android.socialtree.core.model.SocialNode
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -96,6 +97,7 @@ class NodeDetailViewModel : ViewModel() {
             status = NodeStatus.ACTIVE,
             description = "가족 구성원",
             personData = PersonData(
+                photoMetadataList = emptyList(),
                 relationship = PersonRelationship.FRIEND,
                 birthDate = BirthDate(
                     solarDate = "1998년 10월 13일",
@@ -119,6 +121,27 @@ class NodeDetailViewModel : ViewModel() {
             status = NodeStatus.ACTIVE,
             description = "어머니",
             personData = PersonData(
+                profileImageUrl = "android.resource://com.example.brown_house_android/drawable/ic_launcher_foreground",
+                photoMetadataList = listOf(
+                    PhotoMetadata(
+                        id = "photo-1",
+                        uri = "android.resource://com.example.brown_house_android/drawable/ic_launcher_background",
+                        takenAt = System.currentTimeMillis() - 86400000L * 60,
+                        displayName = "어머니_생신.jpg"
+                    ),
+                    PhotoMetadata(
+                        id = "photo-2",
+                        uri = "android.resource://com.example.brown_house_android/drawable/ic_launcher_foreground",
+                        takenAt = System.currentTimeMillis() - 86400000L * 45,
+                        displayName = "가족여행.jpg"
+                    ),
+                    PhotoMetadata(
+                        id = "photo-3",
+                        uri = "android.resource://com.example.brown_house_android/drawable/ic_launcher_background",
+                        takenAt = System.currentTimeMillis() - 86400000L * 30,
+                        displayName = "꽃구경.jpg"
+                    )
+                ),
                 relationship = PersonRelationship.PARENT,
                 birthDate = BirthDate(
                     solarDate = "1965년 4월 5일",
