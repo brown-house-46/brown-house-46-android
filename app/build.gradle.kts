@@ -60,9 +60,6 @@ dependencies {
     implementation(libs.tensorflow.lite)
     implementation(libs.tensorflow.lite.support)
 
-    // Navigation Compose
-    implementation("androidx.navigation:navigation-compose:2.7.6")
-
     // Extended Material Icons
     implementation("androidx.compose.material:material-icons-extended:1.5.4")
 
