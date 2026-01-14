@@ -2,6 +2,7 @@ package com.example.brown_house_android.face
 
 import android.graphics.Bitmap
 import android.graphics.Rect
+import android.util.Log
 import com.google.mlkit.vision.face.Face
 import kotlin.math.max
 import kotlin.math.min
@@ -10,6 +11,8 @@ import kotlin.math.min
  * 얼굴 영역 잘라내기 유틸리티
  */
 object FaceCropper {
+
+    private const val TAG = "FaceCropper"
 
     /**
      * 검출된 얼굴을 정사각형으로 잘라내고 112x112px로 리사이징
@@ -56,7 +59,7 @@ object FaceCropper {
 
             resizedBitmap
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "Failed to crop face", e)
             null
         }
     }

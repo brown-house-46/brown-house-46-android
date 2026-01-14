@@ -60,6 +60,10 @@ dependencies {
     implementation(libs.tensorflow.lite)
     implementation(libs.tensorflow.lite.support)
 
+    // ViewModel 지원
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+
     // Extended Material Icons
     implementation("androidx.compose.material:material-icons-extended:1.5.4")
 
