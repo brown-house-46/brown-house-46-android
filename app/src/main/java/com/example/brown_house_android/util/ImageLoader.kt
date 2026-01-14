@@ -5,10 +5,13 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.net.Uri
+import android.util.Log
 import androidx.exifinterface.media.ExifInterface
 import java.io.IOException
 
 object ImageLoader {
+
+    private const val TAG = "ImageLoader"
 
     /**
      * URI를 Bitmap으로 변환
@@ -48,7 +51,7 @@ object ImageLoader {
             bitmap?.let { rotateImageIfRequired(context, it, uri) }
 
         } catch (e: IOException) {
-            e.printStackTrace()
+            Log.e(TAG, "Failed to load bitmap from URI", e)
             null
         }
     }
@@ -81,24 +84,30 @@ object ImageLoader {
         bitmap: Bitmap,
         uri: Uri
     ): Bitmap {
-        val inputStream = context.contentResolver.openInputStream(uri) ?: return bitmap
+        val rotatedBitmap = context.contentResolver.openInputStream(uri)?.use { inputStream ->
+            val exif = ExifInterface(inputStream)
+            val orientation = exif.getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_NORMAL
+            )
 
-        val exif = ExifInterface(inputStream)
-        val orientation = exif.getAttributeInt(
-            ExifInterface.TAG_ORIENTATION,
-            ExifInterface.ORIENTATION_NORMAL
-        )
+            when (orientation) {
+                ExifInterface.ORIENTATION_ROTATE_90 -> rotateBitmap(bitmap, 90f)
+                ExifInterface.ORIENTATION_ROTATE_180 -> rotateBitmap(bitmap, 180f)
+                ExifInterface.ORIENTATION_ROTATE_270 -> rotateBitmap(bitmap, 270f)
+                else -> bitmap
+            }
+        } ?: bitmap
 
-        return when (orientation) {
-            ExifInterface.ORIENTATION_ROTATE_90 -> rotateBitmap(bitmap, 90f)
-            ExifInterface.ORIENTATION_ROTATE_180 -> rotateBitmap(bitmap, 180f)
-            ExifInterface.ORIENTATION_ROTATE_270 -> rotateBitmap(bitmap, 270f)
-            else -> bitmap
+        if (rotatedBitmap != bitmap) {
+            bitmap.recycle()
         }
+        return rotatedBitmap
     }
 
     private fun rotateBitmap(bitmap: Bitmap, degrees: Float): Bitmap {
         val matrix = Matrix().apply { postRotate(degrees) }
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
+
 }

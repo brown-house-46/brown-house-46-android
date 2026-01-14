@@ -1,6 +1,7 @@
 package com.example.brown_house_android.face
 
 import android.graphics.Bitmap
+import android.util.Log
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
@@ -8,6 +9,10 @@ import com.google.mlkit.vision.face.FaceDetectorOptions
 import kotlinx.coroutines.tasks.await
 
 class FaceDetector {
+
+    companion object {
+        private const val TAG = "FaceDetector"
+    }
 
     private val options = FaceDetectorOptions.Builder()
         .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
@@ -29,7 +34,7 @@ class FaceDetector {
             val faces = detector.process(inputImage).await()
             faces.size
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "Failed to detect faces", e)
             0
         }
     }
@@ -44,7 +49,7 @@ class FaceDetector {
             val inputImage = InputImage.fromBitmap(bitmap, 0)
             detector.process(inputImage).await()
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "Failed to detect faces with details", e)
             emptyList()
         }
     }
