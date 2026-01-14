@@ -79,6 +79,7 @@ class FaceClusteringOrchestrator(
                                 // 임베딩 생성
                                 val embedding = faceEmbedder.getEmbedding(croppedFace)
 
+                                //OPTIMIZE: 사진 데이터같은 경우는 로컬 변수더라도 한번에 많이 올리면 outOfMemory 가능
                                 if (embedding != null) {
                                     allFaceData.add(
                                         FaceClusterer.FaceData(
