@@ -5,10 +5,13 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.net.Uri
+import android.util.Log
 import androidx.exifinterface.media.ExifInterface
 import java.io.IOException
 
 object ImageLoader {
+
+    private const val TAG = "ImageLoader"
 
     /**
      * URI를 Bitmap으로 변환
@@ -48,7 +51,7 @@ object ImageLoader {
             bitmap?.let { rotateImageIfRequired(context, it, uri) }
 
         } catch (e: IOException) {
-            e.printStackTrace()
+            Log.e(TAG, "Failed to load bitmap from URI", e)
             null
         }
     }
@@ -97,6 +100,7 @@ object ImageLoader {
         } ?: bitmap
     }
 
+    //optimize: 원본 비트맵을 다시 안쓴다면 recycle 해야 메모리 누수를 방지한다
     private fun rotateBitmap(bitmap: Bitmap, degrees: Float): Bitmap {
         val matrix = Matrix().apply { postRotate(degrees) }
         val rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
