@@ -51,6 +51,7 @@ import com.example.brown_house_android.socialtree.core.designsystem.foundation.B
 import com.example.brown_house_android.socialtree.core.designsystem.theme.SocialTreeTheme
 import com.example.brown_house_android.socialtree.core.designsystem.tokens.BrownColor
 import com.example.brown_house_android.socialtree.core.designsystem.tokens.BrownSpacing
+import com.example.brown_house_android.socialtree.core.designsystem.tokens.BrownTypography
 import com.example.brown_house_android.socialtree.core.model.BirthDate
 import com.example.brown_house_android.socialtree.core.model.NodeStatus
 import com.example.brown_house_android.socialtree.core.model.NodeType
@@ -235,9 +236,8 @@ private fun PersonDetailView(
                 ) {
                     Text(
                         text = personData.memo,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = BrownColor.DetailTextMain,
-                        lineHeight = MaterialTheme.typography.bodyMedium.lineHeight.times(1.5f)
+                        style = BrownTypography.bodyMediumRelaxed,
+                        color = BrownColor.DetailTextMain
                     )
                 }
             }
