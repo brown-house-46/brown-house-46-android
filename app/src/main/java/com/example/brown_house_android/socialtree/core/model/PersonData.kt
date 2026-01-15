@@ -6,6 +6,7 @@ package com.example.brown_house_android.socialtree.core.model
  */
 data class PersonData(
     val profileImageUrl: String? = null,
+    val photoMetadataList: List<PhotoMetadata> = emptyList(),
     val relationship: PersonRelationship = PersonRelationship.OTHER,
     val birthDateMode: BirthDateMode = BirthDateMode.AGE,
     val age: Int? = null,

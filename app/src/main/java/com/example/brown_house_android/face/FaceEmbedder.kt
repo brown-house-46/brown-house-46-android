@@ -2,6 +2,7 @@ package com.example.brown_house_android.face
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.support.common.FileUtil
 import java.nio.ByteBuffer
@@ -41,7 +42,7 @@ class FaceEmbedder(context: Context) {
                 println("============================")
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "MobileFaceNet 모델 로드 실패", e)
             throw RuntimeException("MobileFaceNet 모델 로드 실패: ${e.message}\n" +
                     "assets/MobileFaceNet.tflite 파일이 있는지 확인하세요.")
         }
@@ -110,7 +111,7 @@ class FaceEmbedder(context: Context) {
             normalizeL2(embedding)
 
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "Failed to get embedding from face bitmap", e)
             null
         }
     }
@@ -155,7 +156,7 @@ class FaceEmbedder(context: Context) {
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "Failed to get embeddings from face bitmaps", e)
         }
 
         return results
@@ -298,6 +299,7 @@ class FaceEmbedder(context: Context) {
     }
 
     companion object {
+        private const val TAG = "FaceEmbedder"
         private const val MODEL_PATH = "MobileFaceNet.tflite"
         private const val INPUT_SIZE = 112
         private const val BATCH_SIZE = 2  // 모델의 배치 크기

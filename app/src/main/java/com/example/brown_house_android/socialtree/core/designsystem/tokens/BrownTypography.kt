@@ -39,6 +39,22 @@ object BrownTypography {
         val xl3 = 26.sp       // text-[26px]
     }
 
+    // Line Height variants
+    object LineHeight {
+        val relaxed = 30.sp   // 메모, 긴 문단용 (bodyMedium 기준 1.5배)
+    }
+
+    /**
+     * 메모, 긴 문단 등 읽기 편의를 위해 넓은 줄 간격이 필요한 텍스트용 스타일
+     */
+    val bodyMediumRelaxed = TextStyle(
+        fontFamily = bodyFontFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = Size.sm,
+        lineHeight = LineHeight.relaxed,
+        letterSpacing = 0.25.sp
+    )
+
     // Create Material3 Typography
     fun createTypography(): Typography = Typography(
         // Display - Large headlines
