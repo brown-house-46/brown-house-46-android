@@ -10,8 +10,12 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,7 +57,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -274,9 +281,44 @@ private fun FilterChip(
     }
 }
 
+private const val MIN_SCALE = 0.5f
+private const val MAX_SCALE = 3.0f
+
 @Composable
 private fun TreeCanvas(onNodeSelected: (String) -> Unit) {
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+    var scale by remember { mutableFloatStateOf(1f) }
+    var offsetX by remember { mutableFloatStateOf(0f) }
+    var offsetY by remember { mutableFloatStateOf(0f) }
+
+    BoxWithConstraints(
+        modifier = Modifier
+            .fillMaxSize()
+            .clipToBounds()
+            .pointerInput(Unit) {
+                detectTransformGestures { centroid, pan, zoom, _ ->
+                    val newScale = (scale * zoom).coerceIn(MIN_SCALE, MAX_SCALE)
+                    val scaleChange = newScale / scale
+                    offsetX = (offsetX - centroid.x) * scaleChange + centroid.x + pan.x
+                    offsetY = (offsetY - centroid.y) * scaleChange + centroid.y + pan.y
+                    scale = newScale
+                }
+            }
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onDoubleTap = { tapOffset ->
+                        if (scale > 1.5f) {
+                            scale = 1f
+                            offsetX = 0f
+                            offsetY = 0f
+                        } else {
+                            scale = 2f
+                            offsetX = (1 - scale) * tapOffset.x
+                            offsetY = (1 - scale) * tapOffset.y
+                        }
+                    }
+                )
+            }
+    ) {
         val width = maxWidth
         val height = maxHeight
 
@@ -287,86 +329,97 @@ private fun TreeCanvas(onNodeSelected: (String) -> Unit) {
         val alexPosition = DpOffset(width * 0.78f, height * 0.55f)
         val sarahPosition = DpOffset(width * 0.55f, height * 0.72f)
 
-        DotGridBackground()
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                    translationX = offsetX
+                    translationY = offsetY
+                }
+        ) {
+            DotGridBackground()
 
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val stroke = (BrownSpacing.space1 / 4)
-            drawLine(
-                color = BrownColor.BorderLight,
-                start = mePosition.toPxOffset(this),
-                end = momPosition.toPxOffset(this),
-                strokeWidth = stroke.toPx(),
-                cap = StrokeCap.Round
-            )
-            drawLine(
-                color = BrownColor.BorderLight,
-                start = mePosition.toPxOffset(this),
-                end = dadPosition.toPxOffset(this),
-                strokeWidth = stroke.toPx(),
-                cap = StrokeCap.Round
-            )
-            drawLine(
-                color = BrownColor.BorderLight,
-                start = mePosition.toPxOffset(this),
-                end = alexPosition.toPxOffset(this),
-                strokeWidth = stroke.toPx(),
-                cap = StrokeCap.Round
-            )
-            drawLine(
-                color = BrownColor.BorderLight,
-                start = mePosition.toPxOffset(this),
-                end = sarahPosition.toPxOffset(this),
-                strokeWidth = stroke.toPx(),
-                cap = StrokeCap.Round
-            )
-            drawLine(
-                color = BrownColor.BorderLight,
-                start = momPosition.toPxOffset(this),
-                end = grandmaPosition.toPxOffset(this),
-                strokeWidth = stroke.toPx(),
-                cap = StrokeCap.Round
-            )
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val stroke = (BrownSpacing.space1 / 4)
+                drawLine(
+                    color = BrownColor.BorderLight,
+                    start = mePosition.toPxOffset(this),
+                    end = momPosition.toPxOffset(this),
+                    strokeWidth = stroke.toPx(),
+                    cap = StrokeCap.Round
+                )
+                drawLine(
+                    color = BrownColor.BorderLight,
+                    start = mePosition.toPxOffset(this),
+                    end = dadPosition.toPxOffset(this),
+                    strokeWidth = stroke.toPx(),
+                    cap = StrokeCap.Round
+                )
+                drawLine(
+                    color = BrownColor.BorderLight,
+                    start = mePosition.toPxOffset(this),
+                    end = alexPosition.toPxOffset(this),
+                    strokeWidth = stroke.toPx(),
+                    cap = StrokeCap.Round
+                )
+                drawLine(
+                    color = BrownColor.BorderLight,
+                    start = mePosition.toPxOffset(this),
+                    end = sarahPosition.toPxOffset(this),
+                    strokeWidth = stroke.toPx(),
+                    cap = StrokeCap.Round
+                )
+                drawLine(
+                    color = BrownColor.BorderLight,
+                    start = momPosition.toPxOffset(this),
+                    end = grandmaPosition.toPxOffset(this),
+                    strokeWidth = stroke.toPx(),
+                    cap = StrokeCap.Round
+                )
+            }
+
+            TreePersonNode(
+                name = "Grandma",
+                size = BrownAvatarSize.SMALL,
+                position = grandmaPosition,
+                labelStyle = LabelStyle.Subtle
+            ) { onNodeSelected("node-1") }
+
+            TreePersonNode(
+                name = "Mom",
+                size = BrownAvatarSize.MEDIUM,
+                position = momPosition,
+                labelStyle = LabelStyle.Primary
+            ) { onNodeSelected("node-2") }
+
+            TreePersonNode(
+                name = "Dad",
+                size = BrownAvatarSize.MEDIUM,
+                position = dadPosition,
+                labelStyle = LabelStyle.Subtle
+            ) { onNodeSelected("node-3") }
+
+            TreePersonNode(
+                name = "Alex",
+                size = BrownAvatarSize.SMALL,
+                position = alexPosition,
+                labelStyle = LabelStyle.Subtle
+            ) { onNodeSelected("node-4") }
+
+            TreePersonNode(
+                name = "Sarah",
+                size = BrownAvatarSize.SMALL,
+                position = sarahPosition,
+                labelStyle = LabelStyle.Subtle
+            ) { onNodeSelected("node-5") }
+
+            TreeMainNode(
+                name = "Me",
+                position = mePosition
+            ) { onNodeSelected("node-me") }
         }
-
-        TreePersonNode(
-            name = "Grandma",
-            size = BrownAvatarSize.SMALL,
-            position = grandmaPosition,
-            labelStyle = LabelStyle.Subtle
-        ) { onNodeSelected("node-1") }
-
-        TreePersonNode(
-            name = "Mom",
-            size = BrownAvatarSize.MEDIUM,
-            position = momPosition,
-            labelStyle = LabelStyle.Primary
-        ) { onNodeSelected("node-2") }
-
-        TreePersonNode(
-            name = "Dad",
-            size = BrownAvatarSize.MEDIUM,
-            position = dadPosition,
-            labelStyle = LabelStyle.Subtle
-        ) { onNodeSelected("node-3") }
-
-        TreePersonNode(
-            name = "Alex",
-            size = BrownAvatarSize.SMALL,
-            position = alexPosition,
-            labelStyle = LabelStyle.Subtle
-        ) { onNodeSelected("node-4") }
-
-        TreePersonNode(
-            name = "Sarah",
-            size = BrownAvatarSize.SMALL,
-            position = sarahPosition,
-            labelStyle = LabelStyle.Subtle
-        ) { onNodeSelected("node-5") }
-
-        TreeMainNode(
-            name = "Me",
-            position = mePosition
-        ) { onNodeSelected("node-me") }
     }
 }
 
