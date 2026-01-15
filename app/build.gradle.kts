@@ -64,6 +64,13 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
 
+    // Extended Material Icons
+    implementation("androidx.compose.material:material-icons-extended:1.5.4")
+
+    // Image Loading (Coil)
+    implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation(libs.androidx.navigation.compose)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
