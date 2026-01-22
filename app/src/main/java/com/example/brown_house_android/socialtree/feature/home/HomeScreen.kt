@@ -10,12 +10,13 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.calculateCentroid
+import androidx.compose.foundation.gestures.calculatePan
+import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
-import androidx.compose.foundation.gestures.rememberTransformableState
-import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -61,6 +62,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -283,40 +285,92 @@ private fun FilterChip(
 
 private const val MIN_SCALE = 0.5f
 private const val MAX_SCALE = 3.0f
+private const val DOUBLE_TAP_ZOOM_THRESHOLD = 1.5f
+private const val DOUBLE_TAP_ZOOM_TARGET = 2f
+private const val DEFAULT_SCALE = 1f
+private const val DEFAULT_OFFSET = 0f
+private const val DOUBLE_TAP_TIMEOUT_MS = 300L
 
 @Composable
 private fun TreeCanvas(onNodeSelected: (String) -> Unit) {
-    var scale by remember { mutableFloatStateOf(1f) }
-    var offsetX by remember { mutableFloatStateOf(0f) }
-    var offsetY by remember { mutableFloatStateOf(0f) }
+    var scale by remember { mutableFloatStateOf(DEFAULT_SCALE) }
+    var offsetX by remember { mutableFloatStateOf(DEFAULT_OFFSET) }
+    var offsetY by remember { mutableFloatStateOf(DEFAULT_OFFSET) }
 
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .clipToBounds()
             .pointerInput(Unit) {
-                detectTransformGestures { centroid, pan, zoom, _ ->
-                    val newScale = (scale * zoom).coerceIn(MIN_SCALE, MAX_SCALE)
-                    val scaleChange = newScale / scale
-                    offsetX = (offsetX - centroid.x) * scaleChange + centroid.x + pan.x
-                    offsetY = (offsetY - centroid.y) * scaleChange + centroid.y + pan.y
-                    scale = newScale
-                }
-            }
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onDoubleTap = { tapOffset ->
-                        if (scale > 1.5f) {
-                            scale = 1f
-                            offsetX = 0f
-                            offsetY = 0f
+                var lastTapTime = 0L
+                var lastTapPosition = androidx.compose.ui.geometry.Offset.Zero
+
+                awaitEachGesture {
+                    val firstDown = awaitFirstDown(requireUnconsumed = false)
+                    val firstDownTime = System.currentTimeMillis()
+                    val firstDownPosition = firstDown.position
+
+                    var isMultiTouch = false
+                    var totalPan = androidx.compose.ui.geometry.Offset.Zero
+
+                    do {
+                        val event = awaitPointerEvent()
+                        val pointers = event.changes
+
+                        if (pointers.size > 1) {
+                            isMultiTouch = true
+                        }
+
+                        if (isMultiTouch || pointers.size > 1) {
+                            val centroid = event.calculateCentroid(useCurrent = true)
+                            val pan = event.calculatePan()
+                            val zoom = event.calculateZoom()
+
+                            if (centroid != androidx.compose.ui.geometry.Offset.Unspecified) {
+                                val newScale = (scale * zoom).coerceIn(MIN_SCALE, MAX_SCALE)
+                                val scaleChange = newScale / scale
+                                offsetX = (offsetX - centroid.x) * scaleChange + centroid.x + pan.x
+                                offsetY = (offsetY - centroid.y) * scaleChange + centroid.y + pan.y
+                                scale = newScale
+                            }
+
+                            pointers.forEach { if (it.positionChanged()) it.consume() }
+                        } else if (pointers.size == 1) {
+                            val pointer = pointers.first()
+                            val pan = pointer.position - pointer.previousPosition
+                            if (pan != androidx.compose.ui.geometry.Offset.Zero) {
+                                totalPan += pan
+                                if (totalPan.getDistance() > viewConfiguration.touchSlop) {
+                                    offsetX += pan.x
+                                    offsetY += pan.y
+                                    pointer.consume()
+                                }
+                            }
+                        }
+                    } while (pointers.any { it.pressed })
+
+                    if (!isMultiTouch && totalPan.getDistance() < viewConfiguration.touchSlop) {
+                        val currentTime = System.currentTimeMillis()
+                        val timeDiff = currentTime - lastTapTime
+                        val positionDiff = (firstDownPosition - lastTapPosition).getDistance()
+
+                        if (timeDiff < DOUBLE_TAP_TIMEOUT_MS && positionDiff < viewConfiguration.touchSlop * 2) {
+                            if (scale > DOUBLE_TAP_ZOOM_THRESHOLD) {
+                                scale = DEFAULT_SCALE
+                                offsetX = DEFAULT_OFFSET
+                                offsetY = DEFAULT_OFFSET
+                            } else {
+                                scale = DOUBLE_TAP_ZOOM_TARGET
+                                offsetX = (1 - scale) * firstDownPosition.x
+                                offsetY = (1 - scale) * firstDownPosition.y
+                            }
+                            lastTapTime = 0L
                         } else {
-                            scale = 2f
-                            offsetX = (1 - scale) * tapOffset.x
-                            offsetY = (1 - scale) * tapOffset.y
+                            lastTapTime = firstDownTime
+                            lastTapPosition = firstDownPosition
                         }
                     }
-                )
+                }
             }
     ) {
         val width = maxWidth
