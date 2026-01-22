@@ -41,20 +41,24 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FormatListBulleted
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -83,6 +87,8 @@ import com.example.brown_house_android.socialtree.core.designsystem.tokens.Brown
 import com.example.brown_house_android.socialtree.core.designsystem.tokens.BrownShape
 import com.example.brown_house_android.socialtree.core.designsystem.tokens.BrownSpacing
 import com.example.brown_house_android.socialtree.core.model.SocialNode
+import com.example.brown_house_android.socialtree.feature.home.components.SideMenuDrawer
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 /**
@@ -94,7 +100,8 @@ fun HomeScreen(
     onNodeClick: (String) -> Unit = {},
     onAddNode: () -> Unit = {},
     onOpenProfile: () -> Unit = {},
-    onOpenSettings: () -> Unit = {}
+    onOpenSettings: () -> Unit = {},
+    onOpenMenu: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -106,7 +113,8 @@ fun HomeScreen(
         onNodeClick = onNodeClick,
         onAddNode = onAddNode,
         onOpenProfile = onOpenProfile,
-        onOpenSettings = onOpenSettings
+        onOpenSettings = onOpenSettings,
+        onOpenMenu = onOpenMenu
     )
 }
 
@@ -119,13 +127,68 @@ private fun HomeContent(
     onNodeClick: (String) -> Unit,
     onAddNode: () -> Unit,
     onOpenProfile: () -> Unit,
-    onOpenSettings: () -> Unit
+    onOpenSettings: () -> Unit,
+    onOpenMenu: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(BrownColor.BackgroundLight)
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
+    SideMenuDrawer(
+        drawerState = drawerState,
+        onCloseDrawer = {
+            scope.launch {
+                drawerState.close()
+            }
+        },
+        onViewProfile = onOpenProfile,
+        onFriendsClick = {
+            scope.launch {
+                drawerState.close()
+            }
+            // TODO: Navigate to Friends screen
+        },
+        onFamilyGroupsClick = {
+            scope.launch {
+                drawerState.close()
+            }
+            // TODO: Navigate to Family Groups screen
+        },
+        onMyTreeClick = {
+            scope.launch {
+                drawerState.close()
+            }
+            // Navigate to home (current screen)
+        },
+        onNotificationsClick = {
+            scope.launch {
+                drawerState.close()
+            }
+            // TODO: Navigate to Notifications screen
+        },
+        onSettingsClick = {
+            scope.launch {
+                drawerState.close()
+            }
+            onOpenSettings()
+        },
+        onHelpSupportClick = {
+            scope.launch {
+                drawerState.close()
+            }
+            // TODO: Navigate to Help & Support screen
+        },
+        onLogoutClick = {
+            scope.launch {
+                drawerState.close()
+            }
+            // TODO: Handle logout
+        }
     ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BrownColor.BackgroundLight)
+        ) {
         TreeCanvas(onNodeSelected = onNodeSelected)
 
         Column(
@@ -194,11 +257,17 @@ private fun HomeContent(
                 .padding(end = BrownSpacing.space5, bottom = BrownSpacing.space16)
         )
 
-        BottomNavBar(
-            onOpenSettings = onOpenSettings,
-            onOpenProfile = onOpenProfile,
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
+            BottomNavBar(
+                onOpenSettings = onOpenSettings,
+                onOpenProfile = onOpenProfile,
+                onOpenMenu = {
+                    scope.launch {
+                        drawerState.open()
+                    }
+                },
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+        }
     }
 }
 
@@ -720,6 +789,7 @@ private fun BottomDetailSheet(
 private fun BottomNavBar(
     onOpenSettings: () -> Unit,
     onOpenProfile: () -> Unit,
+    onOpenMenu: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -741,6 +811,12 @@ private fun BottomNavBar(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            BottomNavItem(
+                label = "Menu",
+                icon = Icons.Default.Menu,
+                isSelected = false,
+                onClick = onOpenMenu
+            )
             BottomNavItem(
                 label = "Tree",
                 icon = Icons.Default.AccountTree,
@@ -850,7 +926,8 @@ private fun HomeScreenPreview() {
             onNodeClick = {},
             onAddNode = {},
             onOpenProfile = {},
-            onOpenSettings = {}
+            onOpenSettings = {},
+            onOpenMenu = {}
         )
     }
 }
